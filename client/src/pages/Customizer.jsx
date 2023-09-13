@@ -74,7 +74,11 @@ const Customizer = () => {
       handleDecals(type, `data:image/png;base64,${data.photo}`);
     } catch (error) {
       console.error(error);
-      Swal.fire('Error', 'API key billing limit reached', 'error'); // Show Swal alert for API errors
+      if (error.message === 'Failed to fetch') {
+        Swal.fire('Error', 'API key billing limit reached', 'error');
+      }
+
+      // Swal.fire('Error', error.message, 'error'); // Show Swal alert for API errors
     } finally {
       setGeneratingImg(false);
       setActiveEditorTab('');
