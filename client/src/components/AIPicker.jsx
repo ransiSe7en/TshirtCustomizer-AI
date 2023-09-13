@@ -41,4 +41,4 @@ const AIPicker = ({prompt, setPrompt, generatingImg, handleSubmit}) => {
   )
 }
 
-export default AIPicker
+export default AIPicker;
