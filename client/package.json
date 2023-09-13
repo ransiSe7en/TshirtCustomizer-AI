@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-three/drei": "^9.83.3",
     "@react-three/fiber": "^8.14.1",
+    "@sweetalert2/theme-dark": "^5.0.15",
     "framer-motion": "^10.16.4",
     "maath": "^0.7.0",
     "openai": "^4.6.0",

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSnapshot } from 'valtio';
-import Swal from 'sweetalert2'; // Import SweetAlert
+import Swal from 'sweetalert2';
+import '@sweetalert2/theme-dark/dark.css';
 
 import config from '../config/config';
 import state from '../store';
@@ -48,7 +49,7 @@ const Customizer = () => {
 
   const handleSubmit = async (type) => {
     if (!prompt) {
-      Swal.fire('Error', 'Please enter a prompt', 'error'); // Show Swal alert for empty prompt
+      Swal.fire('Error', 'Please enter a prompt', 'error'); 
       return;
     }
 
@@ -76,9 +77,9 @@ const Customizer = () => {
       console.error(error);
       if (error.message === 'Failed to fetch') {
         Swal.fire('Error', 'API key billing limit reached', 'error');
+      } else {
+        Swal.fire('Error', error.message, 'error');
       }
-
-      // Swal.fire('Error', error.message, 'error'); // Show Swal alert for API errors
     } finally {
       setGeneratingImg(false);
       setActiveEditorTab('');
