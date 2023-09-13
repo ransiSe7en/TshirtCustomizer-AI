@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSnapshot } from 'valtio';
+import Swal from 'sweetalert2'; // Import SweetAlert
 
 import config from '../config/config';
 import state from '../store';
@@ -18,37 +19,38 @@ const Customizer = () => {
   const [prompt, setPrompt] = useState('');
   const [generatingImg, setGeneratingImg] = useState(false);
 
-  const [activeEditorTab, setActiveEditorTab] = useState("");
+  const [activeEditorTab, setActiveEditorTab] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState({
     logoShirt: true,
     stylishShirt: false,
-  })
+  });
 
   // show tab content depending on the activeTab
   const generateTabContent = () => {
     switch (activeEditorTab) {
-      case "colorpicker":
-        return <ColorPicker />
-      case "filepicker":
-        return <FilePicker
-          file={file}
-          setFile={setFile}
-          readFile={readFile}
-        />
-      case "aipicker":
-        return <AIPicker 
-          prompt={prompt}
-          setPrompt={setPrompt}
-          generatingImg={generatingImg}
-          handleSubmit={handleSubmit}
-        />
+      case 'colorpicker':
+        return <ColorPicker />;
+      case 'filepicker':
+        return <FilePicker file={file} setFile={setFile} readFile={readFile} />;
+      case 'aipicker':
+        return (
+          <AIPicker
+            prompt={prompt}
+            setPrompt={setPrompt}
+            generatingImg={generatingImg}
+            handleSubmit={handleSubmit}
+          />
+        );
       default:
         return null;
     }
-  }
+  };
 
   const handleSubmit = async (type) => {
-    if(!prompt) return alert("Please enter a prompt");
+    if (!prompt) {
+      Swal.fire('Error', 'Please enter a prompt', 'error'); // Show Swal alert for empty prompt
+      return;
+    }
 
     try {
       setGeneratingImg(true);
@@ -56,41 +58,46 @@ const Customizer = () => {
       const response = await fetch('http://localhost:8080/api/v1/dalle/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           prompt,
-        })
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('API key billing limit reached');
+      }
 
       const data = await response.json();
 
-      handleDecals(type, `data:image/png;base64,${data.photo}`)
+      handleDecals(type, `data:image/png;base64,${data.photo}`);
     } catch (error) {
-      alert(error)
+      console.error(error);
+      Swal.fire('Error', error.message, 'error'); // Show Swal alert for API errors
     } finally {
       setGeneratingImg(false);
-      setActiveEditorTab("");
+      setActiveEditorTab('');
     }
-  }
+  };
 
   const handleDecals = (type, result) => {
     const decalType = DecalTypes[type];
 
     state[decalType.stateProperty] = result;
 
-    if(!activeFilterTab[decalType.filterTab]) {
-      handleActiveFilterTab(decalType.filterTab)
+    if (!activeFilterTab[decalType.filterTab]) {
+      handleActiveFilterTab(decalType.filterTab);
     }
-  }
+  };
 
   const handleActiveFilterTab = (tabName) => {
     switch (tabName) {
-      case "logoShirt":
-          state.isLogoTexture = !activeFilterTab[tabName];
+      case 'logoShirt':
+        state.isLogoTexture = !activeFilterTab[tabName];
         break;
-      case "stylishShirt":
-          state.isFullTexture = !activeFilterTab[tabName];
+      case 'stylishShirt':
+        state.isFullTexture = !activeFilterTab[tabName];
         break;
       default:
         state.isLogoTexture = true;
@@ -103,18 +110,18 @@ const Customizer = () => {
     setActiveFilterTab((prevState) => {
       return {
         ...prevState,
-        [tabName]: !prevState[tabName]
-      }
-    })
-  }
+        [tabName]: !prevState[tabName],
+      };
+    });
+  };
 
   const readFile = (type) => {
     reader(file)
       .then((result) => {
         handleDecals(type, result);
-        setActiveEditorTab("");
-      })
-  }
+        setActiveEditorTab('');
+      });
+  };
 
   return (
     <AnimatePresence>
@@ -128,7 +135,7 @@ const Customizer = () => {
             <div className="flex items-center min-h-screen">
               <div className="editortabs-container tabs">
                 {EditorTabs.map((tab) => (
-                  <Tab 
+                  <Tab
                     key={tab.name}
                     tab={tab}
                     handleClick={() => setActiveEditorTab(tab.name)}
@@ -144,7 +151,7 @@ const Customizer = () => {
             className="absolute z-10 top-5 right-5"
             {...fadeAnimation}
           >
-            <CustomButton 
+            <CustomButton
               type="filled"
               title="Go Back"
               handleClick={() => state.intro = true}
@@ -153,8 +160,8 @@ const Customizer = () => {
           </motion.div>
 
           <motion.div
-            className='filtertabs-container'
-            {...slideAnimation("up")}
+            className="filtertabs-container"
+            {...slideAnimation('up')}
           >
             {FilterTabs.map((tab) => (
               <Tab
@@ -169,7 +176,7 @@ const Customizer = () => {
         </>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
-export default Customizer
+export default Customizer;
